@@ -98,15 +98,16 @@
               name = "pi";
               password = "raspberry";
             };
-            ssid = {
-              name = "sm-main";
-              password = "spectralwap99";
-            };
             wlan-interface = "wlan0";
             host = {
-              name = "myhostname";
+              name = "stonk";
             };
             filesystem = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
+
+            networks = {
+              "The3Sturges" = "55145589";
+              "sm-main" = "spectralwap99";
+            };
           in
           {
 
@@ -136,7 +137,8 @@
               hostName = host.name;
               wireless = {
                 enable = true;
-                networks."${ssid.name}".psk = ssid.password;
+                # networks."${ssid.name}".psk = ssid.password;
+                networks = builtins.mapAttrs (_: psk: { inherit psk; }) networks;
                 interfaces = [ wlan-interface ];
               };
             };
