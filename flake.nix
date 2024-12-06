@@ -31,6 +31,20 @@
               type = "app";
             })
             {
+              boot = ''
+                if [ "''${EUID}" -ne '0' ]
+                then
+                  echo 'Please run as root'
+                  exit 1
+                fi
+
+                set -x
+                mount /dev/disk/by-label/FIRMWARE /mnt
+                BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
+
+                nixos-rebuild boot --flake .
+                reboot
+              '';
               flash-sd-card =
                 let
                   filename = "nixos-sd-image-25.05beta717074.d0797a04b81c-aarch64-linux.img";
