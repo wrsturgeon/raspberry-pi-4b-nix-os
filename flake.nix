@@ -125,6 +125,11 @@
               supportedFilesystems = [ filesystem ];
             };
 
+            environment.systemPackages = with pkgs; [
+              git
+              vim
+            ];
+
             fileSystems = {
               "/" = {
                 device = "/dev/disk/by-label/NIXOS_SD";
@@ -148,7 +153,7 @@
               "flakes"
             ];
 
-            environment.systemPackages = with pkgs; [ vim ];
+            programs.direnv.enable = true;
 
             services.openssh.enable = true;
 
