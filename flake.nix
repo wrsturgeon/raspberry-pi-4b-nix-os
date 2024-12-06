@@ -151,7 +151,7 @@
           };
       in
       {
-        nixosConfigurations.pi = nixpkgs.lib.nixosSystem {
+        nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [ config ];
         };
