@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@7
+
+    - name: Install direnv
+      uses: aldoborrero/direnv-nix-action@v2
+      with:
+        use_nix_profile: true
+        nix_channel: nixpkgs
+
+    - name: Check flake
+      uses: nix flake check --all-systems
