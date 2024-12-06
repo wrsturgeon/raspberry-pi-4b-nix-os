@@ -74,83 +74,87 @@
         devShells.default = pkgs.mkShell { };
       }
     ))
-    // {
-      packages =
-        let
-          system = "aarch64";
-          pkgs = import nixpkgs { inherit system; };
-          config =
-            let
-              user = {
-                name = "pi";
-                password = "raspberry";
-              };
-              ssid = {
-                name = "sm-main";
-                password = "spectralwap99";
-              };
-              wlan-interface = "wlan0";
-              host = {
-                name = "myhostname";
-              };
-              filesystem = "bcachefs"; # "ext4";
-            in
-            {
-
-              boot = {
-                kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
-                initrd.availableKernelModules = [
-                  "xhci_pci"
-                  "usbhid"
-                  "usb_storage"
-                ];
-                loader = {
-                  grub.enable = false;
-                  generic-extlinux-compatible.enable = true;
-                };
-                supportedFilesystems = [ filesystem ];
-              };
-
-              fileSystems = {
-                "/" = {
-                  device = "/dev/disk/by-label/NIXOS_SD";
-                  fsType = filesystem;
-                  options = [ "noatime" ];
-                };
-              };
-
-              networking = {
-                hostName = host.name;
-                wireless = {
-                  enable = true;
-                  networks."${ssid.name}".psk = ssid.password;
-                  interfaces = [ wlan-interface ];
-                };
-              };
-
-              environment.systemPackages = with pkgs; [ vim ];
-
-              services.openssh.enable = true;
-
-              users = {
-                mutableUsers = false;
-                users."${user.name}" = {
-                  isNormalUser = true;
-                  password = user.password;
-                  extraGroups = [ "wheel" ];
-                };
-              };
-
-              hardware.enableRedistributableFirmware = true;
-              system.stateVersion = "25.05";
-
+    // (
+      let
+        system = "aarch64-linux";
+        pkgs = import nixpkgs { inherit system; };
+        config =
+          let
+            user = {
+              name = "pi";
+              password = "raspberry";
             };
-        in
-        {
-          ${system}.nixosConfigurations.pi = nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [ config ];
+            ssid = {
+              name = "sm-main";
+              password = "spectralwap99";
+            };
+            wlan-interface = "wlan0";
+            host = {
+              name = "myhostname";
+            };
+            filesystem = "btrfs"; # "bcachefs"; # "ext4";
+          in
+          {
+
+            boot = {
+              kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+              initrd.availableKernelModules = [
+                "xhci_pci"
+                "usbhid"
+                "usb_storage"
+              ];
+              loader = {
+                grub.enable = false;
+                generic-extlinux-compatible.enable = true;
+              };
+              supportedFilesystems = [ filesystem ];
+            };
+
+            fileSystems = {
+              "/" = {
+                device = "/dev/disk/by-label/NIXOS_SD";
+                fsType = filesystem;
+                options = [ "noatime" ];
+              };
+            };
+
+            networking = {
+              hostName = host.name;
+              wireless = {
+                enable = true;
+                networks."${ssid.name}".psk = ssid.password;
+                interfaces = [ wlan-interface ];
+              };
+            };
+
+            nix.settings.experimental-features = [
+              "nix-command"
+              "flakes"
+            ];
+
+            environment.systemPackages = with pkgs; [ vim ];
+
+            services.openssh.enable = true;
+
+            users = {
+              mutableUsers = false;
+              users."${user.name}" = {
+                isNormalUser = true;
+                password = user.password;
+                extraGroups = [ "wheel" ];
+              };
+            };
+
+            hardware.enableRedistributableFirmware = true;
+            system.stateVersion = "25.05";
+
           };
+      in
+      {
+        nixosConfigurations.pi = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [ config ];
         };
-    };
+      }
+    );
 }
