@@ -106,7 +106,7 @@
             host = {
               name = "myhostname";
             };
-            filesystem = "btrfs"; # "bcachefs"; # "ext4";
+            filesystem = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
           in
           {
 
