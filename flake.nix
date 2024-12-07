@@ -92,89 +92,92 @@
       let
         system = "aarch64-linux";
         pkgs = import nixpkgs { inherit system; };
-        config =
-          let
-            user = {
-              name = "pi";
-              password = "raspberry";
-            };
-            wlan-interface = "wlan0";
-            host = {
-              name = "stonk";
-            };
-            filesystem = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
 
-            networks = {
-              "The3Sturges" = "55145589";
-              "sm-main" = "spectralwap99";
-            };
-          in
-          {
+        user = {
+          name = "pi";
+          password = "raspberry";
+        };
+        wlan-interface = "wlan0";
+        host = {
+          name = "stonk";
+        };
+        filesystem = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
 
-            boot = {
-              kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
-              initrd.availableKernelModules = [
-                "xhci_pci"
-                "usbhid"
-                "usb_storage"
-              ];
-              loader = {
-                grub.enable = false;
-                generic-extlinux-compatible.enable = true;
-              };
-              supportedFilesystems = [ filesystem ];
-            };
+        networks = {
+          "The3Sturges" = "55145589";
+          "sm-main" = "spectralwap99";
+        };
 
-            environment.systemPackages = with pkgs; [
-              git
-              vim
+        config = {
+
+          boot = {
+            kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+            initrd.availableKernelModules = [
+              "xhci_pci"
+              "usbhid"
+              "usb_storage"
             ];
-
-            fileSystems = {
-              "/" = {
-                device = "/dev/disk/by-label/NIXOS_SD";
-                fsType = filesystem;
-                options = [ "noatime" ];
-              };
+            loader = {
+              grub.enable = false;
+              generic-extlinux-compatible.enable = true;
             };
-
-            networking = {
-              hostName = host.name;
-              wireless = {
-                enable = true;
-                # networks."${ssid.name}".psk = ssid.password;
-                networks = builtins.mapAttrs (_: psk: { inherit psk; }) networks;
-                interfaces = [ wlan-interface ];
-              };
-            };
-
-            nix.settings.experimental-features = [
-              "nix-command"
-              "flakes"
-            ];
-
-            programs.direnv.enable = true;
-
-            services.openssh.enable = true;
-
-            users = {
-              mutableUsers = false;
-              users."${user.name}" = {
-                isNormalUser = true;
-                password = user.password;
-                extraGroups = [ "wheel" ];
-              };
-            };
-
-            hardware.enableRedistributableFirmware = true;
-            system.stateVersion = "25.05";
-
+            supportedFilesystems = [ filesystem ];
           };
-      in
-      {
-        nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+
+          environment.systemPackages = with pkgs; [
+            git
+            vim
+          ];
+
+          fileSystems = {
+            "/" = {
+              device = "/dev/disk/by-label/NIXOS_SD";
+              fsType = filesystem;
+              options = [ "noatime" ];
+            };
+          };
+
+          networking = {
+            hostName = host.name;
+            wireless = {
+              enable = true;
+              # networks."${ssid.name}".psk = ssid.password;
+              networks = builtins.mapAttrs (_: psk: { inherit psk; }) networks;
+              interfaces = [ wlan-interface ];
+            };
+          };
+
+          nix.settings.experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
+
+          programs.direnv.enable = true;
+
+          services.openssh.enable = true;
+
+          users = {
+            mutableUsers = false;
+            users."${user.name}" = {
+              isNormalUser = true;
+              password = user.password;
+              extraGroups = [ "wheel" ];
+            };
+          };
+
+          hardware.enableRedistributableFirmware = true;
+          system.stateVersion = "25.05";
+
+        };
+        configuration = nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [ config ];
+        };
+      in
+      {
+        nixosConfigurations = {
+          nixos = configuration;
+          "${host.name}" = configuration;
         };
       }
     );
