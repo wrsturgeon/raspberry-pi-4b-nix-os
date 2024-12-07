@@ -1,0 +1,11 @@
+*
+!.envrc
+!.gitignore
+!flake.nix
+!flake.lock
+
+!.github
+.github/**
+!.github/workflows
+.github/workflows/**
+!.github/workflows/ci.yml
