@@ -164,7 +164,14 @@
             git.enable = true;
           };
 
-          services.openssh.enable = true;
+          services.openssh = {
+            enable = true;
+            ports = [ 22 ];
+            settings = {
+              PasswordAuthentication = true;
+              UseDns = true;
+            };
+          };
 
           system.stateVersion = "25.05";
 
