@@ -2,13 +2,13 @@
   description = "System flake for a Raspberry Pi 4 Model B";
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    nix-filter.url = "github:numtide/nix-filter";
+    nixos-hardware.url = "github:nixos/nixos-hardware";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
   outputs =
     {
       flake-utils,
-      nix-filter,
+      nixos-hardware,
       nixpkgs,
       self,
     }:
@@ -44,6 +44,15 @@
 
                 nixos-rebuild boot --flake .
                 reboot
+              '';
+              default = ''
+                nix flake update
+                nixos-rebuild switch --flake ${./.}
+                nix-collect-garbage -d
+                nix-store --optimise
+                nix store gc
+                nix store optimise
+                echo 'Connected to `'"$(iwgetid -r)"'`'
               '';
               flash-sd-card =
                 let
@@ -98,13 +107,12 @@
           password = "raspberry";
         };
         wlan-interface = "wlan0";
-        host = {
-          name = "stonk";
-        };
+        host.name = "stonk";
         filesystem = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
 
         networks = {
           "The3Sturges" = "55145589";
+          "Will Sturgeon" = "coffeecoffee";
           "sm-main" = "spectralwap99";
         };
 
@@ -118,16 +126,13 @@
               "usb_storage"
             ];
             loader = {
-              grub.enable = false;
+              grub.enable = false; # NOTE: FALSE!
               generic-extlinux-compatible.enable = true;
             };
             supportedFilesystems = [ filesystem ];
           };
 
-          environment.systemPackages = with pkgs; [
-            git
-            vim
-          ];
+          environment.systemPackages = with pkgs; [ vim ];
 
           fileSystems = {
             "/" = {
@@ -136,6 +141,8 @@
               options = [ "noatime" ];
             };
           };
+
+          hardware.enableRedistributableFirmware = true;
 
           networking = {
             hostName = host.name;
@@ -152,9 +159,14 @@
             "flakes"
           ];
 
-          programs.direnv.enable = true;
+          programs = {
+            direnv.enable = true;
+            git.enable = true;
+          };
 
           services.openssh.enable = true;
+
+          system.stateVersion = "25.05";
 
           users = {
             mutableUsers = false;
@@ -164,14 +176,13 @@
               extraGroups = [ "wheel" ];
             };
           };
-
-          hardware.enableRedistributableFirmware = true;
-          system.stateVersion = "25.05";
-
         };
         configuration = nixpkgs.lib.nixosSystem {
           inherit system;
-          modules = [ config ];
+          modules = [
+            config
+            nixos-hardware.nixosModules.raspberry-pi-4
+          ];
         };
       in
       {
