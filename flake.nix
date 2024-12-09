@@ -86,7 +86,6 @@
                       exit 1
                     fi
 
-                    set -x
                     mount /dev/disk/by-label/FIRMWARE /mnt
                     BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
 
