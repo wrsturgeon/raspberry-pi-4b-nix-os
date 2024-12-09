@@ -117,43 +117,6 @@
           system = "aarch64-linux";
           pkgs = import nixpkgs { inherit system; };
 
-          disk = {
-            disko.devices.disk.main = {
-              type = "disk";
-              device = "mmcblk0";
-              content = {
-                type = "gpt";
-                partitions = {
-                  MBR = {
-                    priority = 0;
-                    size = "1M";
-                    type = "EF02";
-                  };
-                  ESP = {
-                    priority = 1;
-                    size = "500M";
-                    type = "EF00";
-                    content = {
-                      type = "filesystem";
-                      format = "vfat";
-                      mountpoint = "/boot";
-                    };
-                  };
-                  root = {
-                    priority = 2;
-                    size = "100%";
-                    content = {
-                      type = "filesystem";
-                      format = filesystem-format;
-                      mountpoint = "/";
-                    };
-                  };
-                };
-              };
-            };
-
-          };
-
           user = {
             name = "pi";
             password = "raspberry";
@@ -253,13 +216,53 @@
               };
             };
           };
+
+          pi-disk = {
+            disko.devices.disk.main = {
+              type = "disk";
+              device = "mmcblk0";
+              content = {
+                type = "gpt";
+                partitions = {
+                  MBR = {
+                    priority = 0;
+                    size = "1M";
+                    type = "EF02";
+                  };
+                  ESP = {
+                    priority = 1;
+                    size = "500M";
+                    type = "EF00";
+                    content = {
+                      type = "filesystem";
+                      format = "vfat";
+                      mountpoint = "/boot";
+                    };
+                  };
+                  root = {
+                    priority = 2;
+                    size = "100%";
+                    content = {
+                      type = "filesystem";
+                      format = filesystem-format;
+                      mountpoint = "/";
+                    };
+                  };
+                };
+              };
+            };
+          };
+
           configuration = nixpkgs.lib.nixosSystem {
             inherit system;
             modules = [
               config
+              disko.nixosModules.disko
               nixos-hardware.nixosModules.raspberry-pi-4
+              pi-disk
             ];
           };
+
         in
         {
           nixosConfigurations = {
