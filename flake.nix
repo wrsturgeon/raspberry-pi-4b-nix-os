@@ -54,7 +54,6 @@
                 default = ''
                   ${pkgs.git}/bin/git fetch origin
                   ${pkgs.git}/bin/git reset --hard origin/main
-                  nix flake update
                   nixos-rebuild switch --flake ${./.}
                   nix-collect-garbage -d
                   nix-store --optimise
