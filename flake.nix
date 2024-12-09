@@ -91,7 +91,7 @@
                     echo # empty line
 
                     echo ${pkgs.lib.strings.escapeShellArg disk-config} > ./disk-config.nix
-                    nix --experimental-features 'nix-command flakes' run github:nix-community/disko/latest -- --mode destroy,format,mount ./disk-config.nix
+                    nix --experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode destroy,format,mount ./disk-config.nix
                     mount
                     exit 0
 
