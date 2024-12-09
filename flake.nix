@@ -90,10 +90,8 @@
                     BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
                     echo # empty line
 
-                    echo ${pkgs.lib.strings.escapeShellArg disk-config} > disk-config.nix
-                    pushd ${disko} # disko
-                    nix run -- --mode destroy,format,mount disk-config.nix
-                    popd # disko
+                    echo ${pkgs.lib.strings.escapeShellArg disk-config} > ./disk-config.nix
+                    nix --experimental-features 'nix-command flakes' run github:nix-community/disko/latest -- --mode destroy,format,mount ./disk-config.nix
                     mount
                     exit 0
 
