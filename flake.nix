@@ -88,9 +88,12 @@
 
                     mount /dev/disk/by-label/FIRMWARE /mnt
                     BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
+                    echo # empty line
 
                     echo ${pkgs.lib.strings.escapeShellArg disk-config} > disk-config.nix
-                    nix run ${disko} -- --mode destroy,format,mount disk-config.nix
+                    pushd ${disko} # disko
+                    nix run -- --mode destroy,format,mount disk-config.nix
+                    popd # disko
                     mount
                     exit 0
 
