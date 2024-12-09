@@ -18,6 +18,8 @@
       self,
     }:
     let
+      filesystem-format = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
+
       for-dev = flake-utils.lib.eachDefaultSystem (
         system:
         let
@@ -37,23 +39,65 @@
                 type = "app";
               })
               {
-                boot = ''
-                  if [ "''${EUID}" -ne '0' ]
-                  then
-                    echo 'Please run as root'
-                    exit 1
-                  fi
+                boot =
+                  let
+                    disk-config = ''
+                      {
+                        disko.devices.disk.main = {
+                          type = "disk";
+                          device = "mmcblk0";
+                          content = {
+                            type = "gpt";
+                            partitions = {
+                              MBR = {
+                                priority = 0;
+                                size = "1M";
+                                type = "EF02";
+                              };
+                              ESP = {
+                                priority = 1;
+                                size = "500M";
+                                type = "EF00";
+                                content = {
+                                  type = "filesystem";
+                                  format = "vfat";
+                                  mountpoint = "/boot";
+                                };
+                              };
+                              root = {
+                                priority = 2;
+                                size = "100%";
+                                content = {
+                                  type = "filesystem";
+                                  format = ${pkgs.toString filesystem-format};
+                                  mountpoint = "/";
+                                };
+                              };
+                            };
+                          };
+                        };
+                      }
+                    '';
+                  in
+                  ''
+                    if [ "''${EUID}" -ne '0' ]
+                    then
+                      echo 'Please run as root'
+                      exit 1
+                    fi
 
-                  set -x
-                  mount /dev/disk/by-label/FIRMWARE /mnt
-                  BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
+                    set -x
+                    mount /dev/disk/by-label/FIRMWARE /mnt
+                    BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
 
-                  ${disko}/bin/disko --mode destroy,format,mount /tmp/disk-config.nix
-                  exit 0
+                    echo ${pkgs.lib.strings.escapeShellArg disk-config} > disk-config.nix
+                    nix run ${disko} -- --mode destroy,format,mount disk-config.nix
+                    mount
+                    exit 0
 
-                  nixos-rebuild boot --flake .
-                  reboot
-                '';
+                    nixos-rebuild boot --flake .
+                    reboot
+                  '';
                 default = ''
                   ${pkgs.git}/bin/git fetch origin
                   ${pkgs.git}/bin/git reset --hard origin/main
@@ -125,7 +169,6 @@
           };
           wlan-interface = "wlan0";
           host.name = "stonk";
-          filesystem-format = "ext4"; # "btrfs"; # "bcachefs"; # "ext4";
 
           networks = {
             "The3Sturges" = "55145589";
@@ -219,49 +262,12 @@
             };
           };
 
-          pi-disk = {
-            disko.devices.disk.main = {
-              type = "disk";
-              device = "mmcblk0";
-              content = {
-                type = "gpt";
-                partitions = {
-                  MBR = {
-                    priority = 0;
-                    size = "1M";
-                    type = "EF02";
-                  };
-                  ESP = {
-                    priority = 1;
-                    size = "500M";
-                    type = "EF00";
-                    content = {
-                      type = "filesystem";
-                      format = "vfat";
-                      mountpoint = "/boot";
-                    };
-                  };
-                  root = {
-                    priority = 2;
-                    size = "100%";
-                    content = {
-                      type = "filesystem";
-                      format = filesystem-format;
-                      mountpoint = "/";
-                    };
-                  };
-                };
-              };
-            };
-          };
-
           configuration = nixpkgs.lib.nixosSystem {
             inherit system;
             modules = [
               config
               disko.nixosModules.disko
               nixos-hardware.nixosModules.raspberry-pi-4
-              pi-disk
             ];
           };
 
