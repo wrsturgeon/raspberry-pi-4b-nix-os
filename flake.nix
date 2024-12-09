@@ -69,7 +69,7 @@
                                 size = "100%";
                                 content = {
                                   type = "filesystem";
-                                  format = ${builtins.toString filesystem-format};
+                                  format = "${filesystem-format}";
                                   mountpoint = "/";
                                 };
                               };
@@ -91,7 +91,7 @@
                     echo # empty line
 
                     echo ${pkgs.lib.strings.escapeShellArg disk-config} > ./disk-config.nix
-                    nix --experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode destroy,format,mount ./disk-config.nix
+                    nix --experimental-features 'nix-command flakes' run github:nix-community/disko --override-input nixpkgs '${nixpkgs}' -- --mode destroy,format,mount ./disk-config.nix
                     mount
                     exit 0
 
