@@ -48,6 +48,9 @@
                   mount /dev/disk/by-label/FIRMWARE /mnt
                   BOOTFS=/mnt FIRMWARE_RELEASE_STATUS=stable ${pkgs.raspberrypi-eeprom}/bin/rpi-eeprom-update -d -a
 
+                  ${disko}/bin/disko --mode destroy,format,mount /tmp/disk-config.nix
+                  exit 0
+
                   nixos-rebuild boot --flake .
                   reboot
                 '';
