@@ -69,7 +69,7 @@
                                 size = "100%";
                                 content = {
                                   type = "filesystem";
-                                  format = ${pkgs.toString filesystem-format};
+                                  format = ${builtins.toString filesystem-format};
                                   mountpoint = "/";
                                 };
                               };
