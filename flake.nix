@@ -171,7 +171,7 @@
           host.name = "stonk";
 
           networks = {
-            "The3Sturges" = "55145589";
+            # "The3Sturges" = "55145589";
             "Will Sturgeon" = "coffeecoffee";
             "sm-main" = "spectralwap99";
           };
