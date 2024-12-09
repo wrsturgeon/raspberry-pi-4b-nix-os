@@ -45,7 +45,7 @@
                       {
                         disko.devices.disk.main = {
                           type = "disk";
-                          device = "mmcblk0";
+                          device = "/dev/mmcblk0";
                           content = {
                             type = "gpt";
                             partitions = {
